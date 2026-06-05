@@ -1,0 +1,12 @@
+# 装修视频 BV 号列表
+# 格式：bv_id,title,tags
+# 请将你的 300 个视频 BV 号填入此文件
+# 获取 BV 号方法：B站视频 URL 中包含 BV 号，如 https://www.bilibili.com/video/BV1GJ411x7h7
+#
+# 示例（请替换为你的实际视频）:
+bv_id,title,tags
+BV1GJ411x7h7,小户型装修避坑指南,装修攻略
+BV1NM411v7Lp,厨房布局黄金法则,厨房设计
+BV1xx411c7M1,客厅收纳技巧大全,收纳整理
+BV1P5411c7Q2,全屋定制注意事项,全屋定制
+BV1GJ411x7h8,卫生间防水施工详解,防水工程

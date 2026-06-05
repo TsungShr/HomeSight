@@ -1,0 +1,106 @@
+# ============================================================
+# Milvus 向量数据库 Docker Compose 配置
+# ============================================================
+# 启动命令: docker-compose up -d
+# 停止命令: docker-compose down
+# Web UI:   http://localhost:3000 (Attu)
+# 端口:     19530 (Milvus gRPC)
+#
+# 系统要求: 8GB+ 内存, 20GB+ 可用磁盘空间
+# ============================================================
+
+version: '3.8'
+
+services:
+  # ============================================================
+  # Milvus etcd — 元数据存储
+  # ============================================================
+  milvus-etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    container_name: milvus-etcd
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - ./volumes/etcd:/etcd
+    command: >
+      etcd -advertise-client-urls=http://127.0.0.1:2379
+             -listen-client-urls http://0.0.0.0:2379
+             --data-dir /etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - milvus
+
+  # ============================================================
+  # Milvus MinIO — 对象存储（S3 兼容）
+  # ============================================================
+  milvus-minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    container_name: milvus-minio
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    volumes:
+      - ./volumes/minio:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - milvus
+
+  # ============================================================
+  # Milvus Standalone — 主服务
+  # ============================================================
+  milvus-standalone:
+    image: milvusdb/milvus:v2.4.0
+    container_name: milvus-standalone
+    command: ["milvus", "run", "standalone"]
+    environment:
+      ETCD_ENDPOINTS: milvus-etcd:2379
+      MINIO_ADDRESS: milvus-minio:9000
+    volumes:
+      - ./volumes/milvus:/var/lib/milvus
+    ports:
+      - "19530:19530"    # Milvus gRPC 端口（Java/Python SDK 连接用）
+      - "9091:9091"      # Milvus Web API 端口
+    depends_on:
+      milvus-etcd:
+        condition: service_healthy
+      milvus-minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+    networks:
+      - milvus
+
+  # ============================================================
+  # Attu — Milvus Web 管理界面
+  # ============================================================
+  attu:
+    image: zilliz/attu:v2.4
+    container_name: milvus-attu
+    environment:
+      ATTU_ENDPOINT: http://milvus-standalone:19530
+    ports:
+      - "3000:3000"
+    depends_on:
+      - milvus-standalone
+    networks:
+      - milvus
+
+networks:
+  milvus:
+    driver: bridge

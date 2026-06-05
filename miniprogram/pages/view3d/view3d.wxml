@@ -1,0 +1,76 @@
+<view class="container">
+  <!-- Large Title -->
+  <view style="padding: 16px 18px 4px;">
+    <text class="ios-title-lg">3D 户型</text>
+  </view>
+
+  <!-- Canvas -->
+  <view class="canvas-wrapper">
+    <canvas id="threeCanvas" type="webgl" class="three-canvas" />
+    <view class="canvas-hint">拖拽旋转 · 缩放查看</view>
+  </view>
+
+  <!-- 控制栏 -->
+  <view class="control-bar">
+    <view class="ctrl-btn" bindtap="resetCamera">
+      <image src="assets/page-icons/rotate.png" style="width:22px;height:22px;" mode="aspectFit" />
+      <text class="ctrl-label">重置</text>
+    </view>
+    <view class="ctrl-btn" bindtap="toggleAutoRotate">
+      <image src="assets/page-icons/rotate.png" style="width:22px;height:22px;opacity:{{autoRotate?1:0.4}};" mode="aspectFit" />
+      <text class="ctrl-label">{{autoRotate ? '停止' : '旋转'}}</text>
+    </view>
+    <view class="ctrl-btn" bindtap="screenshot">
+      <image src="assets/page-icons/export.png" style="width:22px;height:22px;" mode="aspectFit" />
+      <text class="ctrl-label">截图</text>
+    </view>
+  </view>
+
+  <!-- 房间列表 -->
+  <view class="ios-section-title" style="padding-left: 18px;">房间</view>
+  <view class="ios-list" style="margin: 0 16px 12px;">
+    <view
+      class="ios-cell"
+      wx:for="{{rooms}}"
+      wx:key="id"
+      bindtap="selectRoom"
+      data-id="{{item.id}}"
+      style="{{activeRoom === item.id ? 'background: rgba(0,122,255,0.06);' : ''}}"
+    >
+      <view class="room-dot" style="background: {{item.color}};"></view>
+      <text class="ios-cell-label">{{item.name}}</text>
+      <text class="ios-cell-value" style="font-size: 13px;">{{item.area}}㎡</text>
+      <text class="ios-cell-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 房间详情 -->
+  <block wx:if="{{activeRoomData}}">
+    <view class="ios-section-title" style="padding-left: 18px;">{{activeRoomData.name}}</view>
+    <view class="ios-card" style="margin: 0 16px;">
+      <view class="ios-card-body" style="padding: 14px 16px;">
+        <view class="detail-row">
+          <text class="detail-label">面积</text>
+          <text class="detail-value">{{activeRoomData.area}} ㎡</text>
+        </view>
+        <view class="detail-row" wx:if="{{activeRoomData.features.length > 0}}">
+          <text class="detail-label">特点</text>
+          <view class="detail-tags">
+            <text class="detail-tag" wx:for="{{activeRoomData.features}}" wx:key="*this">{{item}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 底部按钮 -->
+  <view class="ios-bottom">
+    <view class="ios-btn-group">
+      <button class="ios-btn ios-btn-secondary" bindtap="goBack">返回</button>
+      <button class="ios-btn ios-btn-primary" bindtap="goToEdit">
+        <image src="assets/page-icons/sofa.png" style="width:16px;height:16px;margin-right:4px;" mode="aspectFit" />
+        家具编辑
+      </button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,44 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/analyze/analyze",
+    "pages/view3d/view3d",
+    "pages/edit/edit",
+    "pages/layout/layout"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#f9f9f9",
+    "navigationBarTitleText": "",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f2f2f7",
+    "backgroundTextStyle": "dark",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "color": "#8e8e93",
+    "selectedColor": "#007aff",
+    "backgroundColor": "#f9f9f9",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/icons/home-inactive.png",
+        "selectedIconPath": "assets/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/edit/edit",
+        "text": "编辑",
+        "iconPath": "assets/icons/edit-inactive.png",
+        "selectedIconPath": "assets/icons/edit-active.png"
+      },
+      {
+        "pagePath": "pages/layout/layout",
+        "text": "水电",
+        "iconPath": "assets/icons/layout-inactive.png",
+        "selectedIconPath": "assets/icons/layout-active.png"
+      }
+    ]
+  },
+  "lazyCodeLoading": "requiredComponents"
+}

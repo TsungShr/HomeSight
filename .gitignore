@@ -1,0 +1,33 @@
+# Build outputs
+backend/target/
+backend/*.jar
+backend/BOOT-INF/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.env
+venv/
+.venv/
+
+# Milvus data
+milvus_data/
+
+# Vector store
+vector_store/knowledge.json
+
+# Node
+node_modules/
+
+# Private configs
+miniprogram/project.private.config.json

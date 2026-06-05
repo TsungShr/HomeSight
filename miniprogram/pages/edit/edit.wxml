@@ -1,0 +1,221 @@
+<view class="container">
+  <!-- Header -->
+  <view class="edit-header">
+    <text class="ios-title-lg">家具编辑</text>
+    <view class="header-actions">
+      <view class="ios-icon-btn" bindtap="showEditRoom">
+        <image src="assets/page-icons/cube.png" style="width:16px;height:16px;" mode="aspectFit" />
+      </view>
+      <view class="ios-icon-btn ios-icon-btn-add" bindtap="showAddRoom">
+        <image src="assets/page-icons/add.png" style="width:16px;height:16px;" mode="aspectFit" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 页面级滚动区域 -->
+    <scroll-view scroll-y enhanced class="page-scroll" bounces="{{false}}" catchtouchmove="preventScroll">
+
+    <!-- 房间标签栏 -->
+    <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="room-scroll">
+      <view class="room-chips">
+        <view
+          class="room-chip {{activeRoom === item.id ? 'active' : ''}}"
+          wx:for="{{rooms}}"
+          wx:key="id"
+          bindtap="switchRoom"
+          data-id="{{item.id}}"
+          style="{{activeRoom === item.id ? 'background:' + item.color + ';color:#fff;border-color:transparent;' : ''}}"
+        >
+          <view class="chip-top">
+            <image src="assets/page-icons/{{item.icon || 'floorplan.png'}}" style="width:16px;height:16px;" mode="aspectFit" />
+            <view class="chip-delete" catchtap="deleteRoomFromChip" data-id="{{item.id}}">
+              <image src="assets/page-icons/trash.png" style="width:10px;height:10px;" mode="aspectFit" />
+            </view>
+          </view>
+          <text class="chip-name">{{item.name}}</text>
+          <text class="chip-area" wx:if="{{item.area > 0}}">{{item.area}}㎡</text>
+        </view>
+
+        <!-- 空状态 -->
+        <view class="room-chip-empty" wx:if="{{rooms.length === 0}}" bindtap="showAddRoom">
+          <image src="assets/page-icons/add.png" style="width:18px;height:18px;opacity:0.4;" mode="aspectFit" />
+          <text class="chip-name" style="opacity:0.5;">添加房间</text>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 画布：单房间户型图 + 家具叠加层 -->
+    <view class="canvas-wrapper" style="width: {{canvasW}}px;" id="canvasWrapper">
+      <canvas id="editorCanvas" type="2d" class="editor-canvas" bindtap="onCanvasTap" />
+      <view
+        class="furniture-layer"
+        style="width: {{canvasW}}px; height: {{canvasH}}px;"
+        bindtouchstart="onFurnitureTouch"
+        bindtouchmove="onFurnitureMove"
+        bindtouchend="onFurnitureTouchEnd"
+      >
+        <view
+          wx:for="{{furnitureList}}"
+          wx:key="id"
+          class="furniture-item {{selectedId === item.id ? 'selected' : ''}}"
+          style="left: {{item.x}}px; top: {{item.y}}px; width: {{item.width}}px; height: {{item.height}}px; transform: rotate({{item.rotation}}deg);"
+          bindtap="selectFurniture"
+          data-id="{{item.id}}"
+        >
+          <image src="assets/page-icons/{{item.iconImg || 'cube.png'}}" style="width:24px;height:24px;" mode="aspectFit" />
+          <text class="furniture-name">{{item.name}}</text>
+        </view>
+      </view>
+
+      <!-- 选中家具操作 -->
+      <view class="furniture-actions-bar" wx:if="{{selectedId}}">
+        <view class="fabtn" bindtap="rotateFurniture">
+          <image src="assets/page-icons/rotate.png" style="width:16px;height:16px;" mode="aspectFit" />
+          <text>旋转</text>
+        </view>
+        <view class="fabtn" bindtap="openResizeSheet">
+          <text style="font-size:16px;">⤡</text>
+          <text>尺寸</text>
+        </view>
+        <view class="fabtn" bindtap="duplicateFurniture">
+          <image src="assets/page-icons/copy.png" style="width:16px;height:16px;" mode="aspectFit" />
+          <text>复制</text>
+        </view>
+        <view class="fabtn fabtn-danger" bindtap="deleteFurniture">
+          <image src="assets/page-icons/trash.png" style="width:16px;height:16px;" mode="aspectFit" />
+          <text>删除</text>
+        </view>
+        <view class="fabtn" bindtap="deselectFurniture">
+          <image src="assets/page-icons/check.png" style="width:16px;height:16px;" mode="aspectFit" />
+          <text>完成</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 家具分类 -->
+    <view class="ios-section-title" style="padding-left: 18px;">添加家具（拖入布局区域）</view>
+    <view class="ios-seg" style="margin: 0 16px 12px;">
+      <view
+        class="ios-seg-item {{furnitureTab === item.key ? 'active' : ''}}"
+        wx:for="{{furnitureTabs}}"
+        wx:key="key"
+        bindtap="switchFurnitureTab"
+        data-key="{{item.key}}"
+      >{{item.label}}</view>
+    </view>
+
+    <!-- 家具网格：支持拖放 -->
+    <view class="ios-card" style="margin: 0 16px;">
+      <view class="furniture-grid">
+        <view
+          class="furniture-card"
+          wx:for="{{currentFurnitureList}}"
+          wx:key="type"
+          catchtouchstart="onCatalogDragStart"
+          catchtouchmove="onCatalogDragMove"
+          catchtouchend="onCatalogDragEnd"
+          data-type="{{item.type}}"
+          data-name="{{item.name}}"
+          data-icon="{{item.iconImg}}"
+          data-width="{{item.width}}"
+          data-height="{{item.height}}"
+        >
+          <image src="assets/page-icons/{{item.iconImg || 'cube.png'}}" style="width:30px;height:30px;" mode="aspectFit" />
+          <text class="fc-name">{{item.name}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部操作 -->
+    <view class="ios-bottom">
+      <view class="ios-btn-group">
+        <button class="ios-btn ios-btn-secondary" style="flex:1;min-width:0;" bindtap="clearAll">清空</button>
+        <button class="ios-btn ios-btn-primary" style="flex:1;min-width:0;" bindtap="saveLayout">
+          <image src="assets/page-icons/save.png" style="width:14px;height:14px;margin-right:4px;" mode="aspectFit" />
+          保存
+        </button>
+        <button class="ios-btn ios-btn-secondary" style="flex:1;min-width:0;" bindtap="goToLayout">
+          <image src="assets/page-icons/bolt.png" style="width:14px;height:14px;margin-right:4px;" mode="aspectFit" />
+          水电
+        </button>
+      </view>
+    </view>
+
+  </scroll-view>
+
+  <!-- 拖放幽灵元素 -->
+  <view wx:if="{{dragGhost}}" class="drag-ghost" style="left:{{dragGhost.x}}px;top:{{dragGhost.y}}px;">
+    <image src="assets/page-icons/{{dragGhost.icon || 'cube.png'}}" style="width:30px;height:30px;" mode="aspectFit" />
+  </view>
+
+  <!-- ===== 弹层 ===== -->
+
+  <!-- 添加房间 -->
+  <view class="model-sheet-mask {{showRoomSheet ? 'mask-show' : ''}}" bindtap="hideRoomSheet"></view>
+  <view class="model-sheet {{showRoomSheet ? 'sheet-show' : ''}}">
+    <view class="sheet-handle"></view>
+    <view class="sheet-header">添加房间</view>
+    <view class="sheet-list">
+      <view
+        class="sheet-item"
+        wx:for="{{roomTypes}}"
+        wx:key="type"
+        bindtap="addRoom"
+        data-type="{{item.type}}"
+      >
+        <view class="sheet-item-dot" style="background:{{item.color}};"></view>
+        <text class="sheet-item-name">{{item.name}}</text>
+        <text class="sheet-item-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 编辑房间 -->
+  <view class="model-sheet-mask {{showEditRoomSheet ? 'mask-show' : ''}}" bindtap="hideEditRoomSheet"></view>
+  <view class="model-sheet {{showEditRoomSheet ? 'sheet-show' : ''}}">
+    <view class="sheet-handle"></view>
+    <view class="sheet-header">编辑房间</view>
+    <view wx:if="{{editRoomData}}" class="edit-room-form">
+      <view class="ios-form-item">
+        <text class="ios-form-label">房间名称</text>
+        <input class="ios-input" value="{{editRoomData.name}}" bindinput="onRoomNameInput" placeholder="如：主卧" />
+      </view>
+      <view class="ios-form-item">
+        <text class="ios-form-label">房间面积（㎡）</text>
+        <input class="ios-input" type="digit" value="{{editRoomData.area}}" bindinput="onRoomAreaInput" placeholder="如：20" />
+      </view>
+      <button class="ios-btn ios-btn-primary" style="margin-top:16px;" bindtap="saveRoomEdit">保存</button>
+    </view>
+  </view>
+
+  <!-- 家具尺寸调整 -->
+  <view class="model-sheet-mask {{showSizeSheet ? 'mask-show' : ''}}" bindtap="hideSizeSheet"></view>
+  <view class="model-sheet {{showSizeSheet ? 'sheet-show' : ''}}">
+    <view class="sheet-handle"></view>
+    <view class="sheet-header">调整尺寸</view>
+    <view class="ios-form-item" style="margin: 16px 0 0;">
+      <text class="ios-form-label">宽度（px）</text>
+      <input class="ios-input" type="number" value="{{tempSize.width}}" bindinput="onSizeInput" data-dim="width" />
+    </view>
+    <view class="ios-form-item" style="margin: 12px 0 0;">
+      <text class="ios-form-label">高度（px）</text>
+      <input class="ios-input" type="number" value="{{tempSize.height}}" bindinput="onSizeInput" data-dim="height" />
+    </view>
+    <button class="ios-btn ios-btn-primary" style="margin-top:16px;" bindtap="applySize">应用</button>
+  </view>
+
+  <!-- 删除确认 -->
+  <view class="model-sheet-mask {{showDeleteConfirm ? 'mask-show' : ''}}" bindtap="cancelDelete"></view>
+  <view class="model-sheet {{showDeleteConfirm ? 'sheet-show' : ''}}">
+    <view class="sheet-handle"></view>
+    <view class="sheet-header">确认删除</view>
+    <view style="padding:16px 0;text-align:center;">确定删除 "{{deleteTargetName}}"？</view>
+    <view class="ios-btn-group" style="display:flex;gap:12px;">
+      <button class="ios-btn ios-btn-secondary" style="flex:1;" bindtap="cancelDelete">取消</button>
+      <button class="ios-btn ios-btn-danger" style="flex:1;" bindtap="confirmDelete">删除</button>
+    </view>
+  </view>
+
+  <!-- 提示 -->
+  <view class="toast" wx:if="{{toast}}">{{toast}}</view>
+</view>

@@ -1,0 +1,131 @@
+<view class="container">
+  <!-- Large Title -->
+  <view style="padding: 16px 18px 4px; display:flex; align-items:center; justify-content:space-between;">
+    <view style="display:flex; align-items:center;">
+      <image class="index-logo" src="../../images/logo1.png" mode="heightFix" />
+      <text class="subtitle" style="margin-left:10px;">智能户型方案</text>
+    </view>
+    <view class="model-trigger" bindtap="showModelSheet" style="margin:0;">
+      <image src="assets/page-icons/bolt.png" style="width:14px;height:14px;" mode="aspectFit" />
+      <text class="model-trigger-text">{{selectedModelName}}</text>
+      <text style="font-size:12px;color:var(--ios-text-3);margin-left:4px;">›</text>
+    </view>
+  </view>
+
+  <!-- 上传卡片 -->
+  <view class="ios-card" style="margin: 16px; overflow: visible;">
+    <!-- 上传区域 -->
+    <view class="upload-zone {{previewImage ? 'has-img' : ''}}" bindtap="chooseImage">
+      <block wx:if="{{previewImage}}">
+        <image class="upload-preview" src="{{previewImage}}" mode="aspectFill" />
+        <view class="upload-overlay">
+          <text class="upload-overlay-text">点击更换图片</text>
+        </view>
+      </block>
+      <block wx:else>
+        <view class="upload-center">
+          <image class="upload-icon-img" src="assets/page-icons/floorplan.png" mode="aspectFit" />
+          <text class="upload-title">上传户型图</text>
+          <text class="upload-hint">点击拍照或从相册选择</text>
+        </view>
+        <view class="upload-tags">
+          <view class="upload-tag">JPG / PNG</view>
+          <view class="upload-tag">小于 10MB</view>
+          <view class="upload-tag">清晰户型图</view>
+        </view>
+      </block>
+    </view>
+
+    <!-- 分析按钮 -->
+    <button
+      class="ios-btn ios-btn-primary"
+      style="margin: 0 16px 16px; {{previewImage ? '' : 'display:none;'}}"
+      bindtap="uploadAndAnalyze"
+      disabled="{{uploading}}"
+    >
+      <image wx:if="{{!uploading}}" src="assets/page-icons/bolt.png" style="width:16px;height:16px;" mode="aspectFit" />
+      <view wx:if="{{uploading}}" class="ios-spinner" style="width:16px;height:16px;border-width:2px;margin-right:4px;"></view>
+      <text>{{uploading ? '分析中...' : '开始 AI 分析'}}</text>
+    </button>
+  </view>
+
+  <!-- 功能入口 -->
+  <view class="ios-section-title">快捷功能</view>
+  <view class="ios-list" style="margin: 0 16px 12px;">
+    <view class="ios-cell" bindtap="goToEdit">
+      <image src="assets/page-icons/sofa.png" style="width:24px;height:24px;margin-right:12px;" mode="aspectFit" />
+      <text class="ios-cell-label">家具编辑</text>
+      <text class="ios-cell-arrow">›</text>
+    </view>
+    <view class="ios-cell" bindtap="goToLayout">
+      <image src="assets/page-icons/bolt.png" style="width:24px;height:24px;margin-right:12px;" mode="aspectFit" />
+      <text class="ios-cell-label">水电布局</text>
+      <text class="ios-cell-arrow">›</text>
+    </view>
+    <view class="ios-cell" bindtap="goToView3d">
+      <image src="assets/page-icons/cube.png" style="width:24px;height:24px;margin-right:12px;" mode="aspectFit" />
+      <text class="ios-cell-label">3D 户型预览</text>
+      <text class="ios-cell-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 历史记录 -->
+  <block wx:if="{{history.length > 0}}">
+    <view class="ios-section-title">最近户型</view>
+    <view class="ios-list" style="margin: 0 16px;">
+      <view
+        class="ios-cell ios-cell-primary"
+        wx:for="{{history}}"
+        wx:key="id"
+        bindtap="openHistory"
+        data-id="{{item.id}}"
+      >
+        <image
+          wx:if="{{item.imageUrl}}"
+          class="history-thumb"
+          src="{{item.imageUrl}}"
+          mode="aspectFill"
+        />
+        <view wx:else class="history-thumb-placeholder">
+          <image src="assets/page-icons/floorplan.png" style="width:22px;height:22px;" mode="aspectFit" />
+        </view>
+        <text class="ios-cell-label" style="margin-left:12px;">{{item.fileName || '户型图'}}</text>
+        <view class="ios-tag ios-tag-blue" style="margin-left:auto;font-size:11px;">{{item.statusText}}</view>
+        <text class="ios-cell-arrow" style="margin-left:6px;">›</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 提示 -->
+  <view class="tip-card" style="margin-top: 12px;">
+    <image src="assets/page-icons/check.png" style="width:24px;height:24px;flex-shrink:0;" mode="aspectFit" />
+    <view class="tip-content">
+      <text class="tip-title">上传建议</text>
+      <text class="tip-desc">上传清晰完整的户型图（含外墙和门窗标注），AI 分析更准确。</text>
+    </view>
+  </view>
+
+  <view style="height:20px;"></view>
+
+  <!-- AI 模型选择弹层 -->
+  <view class="model-sheet-mask {{showModelSheet ? 'mask-show' : ''}}" bindtap="hideModelSheet"></view>
+  <view class="model-sheet {{showModelSheet ? 'sheet-show' : ''}}">
+    <view class="sheet-handle"></view>
+    <view class="sheet-header">选择 AI 模型</view>
+    <view class="sheet-list">
+      <view
+        class="sheet-item {{selectedModel === item.id ? 'sheet-item-active' : ''}}"
+        wx:for="{{modelList}}"
+        wx:key="id"
+        bindtap="selectModel"
+        data-id="{{item.id}}"
+      >
+        <view class="sheet-item-info">
+          <text class="sheet-item-name">{{item.name}}</text>
+        </view>
+        <image wx:if="{{selectedModel === item.id}}" src="assets/page-icons/check.png" style="width:18px;height:18px;" mode="aspectFit" />
+      </view>
+    </view>
+    <view class="sheet-cancel" bindtap="hideModelSheet">取消</view>
+  </view>
+</view>

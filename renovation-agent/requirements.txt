@@ -1,0 +1,8 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+httpx==0.27.2
+ollama==0.3.3
+yt-dlp==2024.10.22
+python-dotenv==1.0.1
+srt==3.5.3
+numpy==2.4.6

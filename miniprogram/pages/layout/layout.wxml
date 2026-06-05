@@ -1,0 +1,178 @@
+<view class="container">
+  <!-- Large Title -->
+  <view style="padding: 16px 18px 4px;">
+    <text class="ios-title-lg">水电布局</text>
+  </view>
+
+  <!-- 需求设置 -->
+  <view class="ios-section-title">布局需求</view>
+  <view class="ios-list" style="margin: 0 16px 12px;">
+    <view class="ios-cell">
+      <text class="ios-cell-label">插座数量</text>
+      <view class="ios-seg-item-group">
+        <view
+          class="ios-seg-pill {{req.outletLevel === '充足' ? 'active' : ''}}"
+          bindtap="setReq"
+          data-key="outletLevel"
+          data-val="充足"
+        >充足</view>
+        <view
+          class="ios-seg-pill {{req.outletLevel === '标准' ? 'active' : ''}}"
+          bindtap="setReq"
+          data-key="outletLevel"
+          data-val="标准"
+        >标准</view>
+        <view
+          class="ios-seg-pill {{req.outletLevel === '基础' ? 'active' : ''}}"
+          bindtap="setReq"
+          data-key="outletLevel"
+          data-val="基础"
+        >基础</view>
+      </view>
+    </view>
+    <view class="ios-cell">
+      <text class="ios-cell-label">网络覆盖</text>
+      <view class="ios-seg-item-group">
+        <view
+          class="ios-seg-pill {{req.networkLevel === '全屋WiFi' ? 'active' : ''}}"
+          bindtap="setReq"
+          data-key="networkLevel"
+          data-val="全屋WiFi"
+        >全屋WiFi</view>
+        <view
+          class="ios-seg-pill {{req.networkLevel === '局部覆盖' ? 'active' : ''}}"
+          bindtap="setReq"
+          data-key="networkLevel"
+          data-val="局部覆盖"
+        >局部覆盖</view>
+      </view>
+    </view>
+    <view class="ios-cell">
+      <text class="ios-cell-label">智能家居</text>
+      <switch
+        checked="{{req.hasSmartHome}}"
+        bindchange="toggleSmart"
+        color="#34c759"
+        style="transform: scale(0.85);"
+      />
+    </view>
+  </view>
+
+  <!-- AI 生成按钮 -->
+  <view style="padding: 0 16px 8px;">
+    <button
+      class="ios-btn ios-btn-primary"
+      bindtap="generateLayout"
+      disabled="{{generating}}"
+      style="margin-bottom: 8px;"
+    >
+      <view wx:if="{{generating}}" class="ios-spinner" style="width:18px;height:18px;border-width:2px;margin-right:6px;"></view>
+      <text>{{generating ? '生成中...' : '基础模式（结构化数据）'}}</text>
+    </button>
+    <button
+      class="ios-btn ios-btn-primary"
+      bindtap="generateLayoutWithAgent"
+      disabled="{{generatingImage}}"
+    >
+      <view wx:if="{{generatingImage}}" class="ios-spinner" style="width:18px;height:18px;border-width:2px;margin-right:6px;"></view>
+      <text>{{generatingImage ? 'AI 生成中...' : '🤖 AI 布局图（推荐）'}}</text>
+    </button>
+  </view>
+
+  <!-- 图层控制 -->
+  <view class="ios-section-title">显示图层</view>
+  <view class="ios-card" style="margin: 0 16px 12px;">
+    <view class="ios-card-body" style="padding: 8px 16px;">
+      <view class="layer-grid">
+        <view
+          class="layer-toggle {{visible.power ? 'on' : ''}}"
+          bindtap="toggleLayer"
+          data-layer="power"
+        >
+          <view class="layer-dot" style="background: #ff3b30;"></view>
+          <text>电源</text>
+        </view>
+        <view
+          class="layer-toggle {{visible.network ? 'on' : ''}}"
+          bindtap="toggleLayer"
+          data-layer="network"
+        >
+          <view class="layer-dot" style="background: #007aff;"></view>
+          <text>网口</text>
+        </view>
+        <view
+          class="layer-toggle {{visible.switches ? 'on' : ''}}"
+          bindtap="toggleLayer"
+          data-layer="switches"
+        >
+          <view class="layer-dot" style="background: #34c759;"></view>
+          <text>开关</text>
+        </view>
+        <view
+          class="layer-toggle {{visible.water ? 'on' : ''}}"
+          bindtap="toggleLayer"
+          data-layer="water"
+        >
+          <view class="layer-dot" style="background: #5ac8fa;"></view>
+          <text>水管</text>
+        </view>
+        <view
+          class="layer-toggle {{visible.electric ? 'on' : ''}}"
+          bindtap="toggleLayer"
+          data-layer="electric"
+        >
+          <view class="layer-dot" style="background: #ff9500;"></view>
+          <text>电路</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 画布 -->
+  <view class="canvas-wrapper">
+    <canvas
+      id="layoutCanvas"
+      type="2d"
+      class="layout-canvas"
+    />
+  </view>
+
+  <!-- AI 生成的布局图 -->
+  <block wx:if="{{agentImageUrl}}">
+    <view class="ios-section-title">AI 布局图</view>
+    <view class="ios-card" style="margin: 0 16px 12px;">
+      <image
+        src="{{agentImageUrl}}"
+        mode="widthFix"
+        style="width:100%;border-radius:12px;display:block;"
+        show-menu-by-longpress="{{true}}"
+      />
+      <view wx:if="{{agentTextAdvice}}" class="agent-advice" style="padding:12px 16px;">
+        <view class="ios-section-title" style="padding:0 0 8px;margin:0;">AI 装修建议</view>
+        <text class="tip-text" style="white-space:pre-wrap;font-size:13px;line-height:1.6;">{{agentTextAdvice}}</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 建议 -->
+  <view class="ios-section-title" wx:if="{{tips.length > 0}}">水电建议</view>
+  <view class="ios-card" wx:if="{{tips.length > 0}}" style="margin: 0 16px 12px;">
+    <view class="ios-card-body" style="padding: 12px 16px;">
+      <view class="tip-item" wx:for="{{tips}}" wx:key="*this">
+        <text class="tip-bullet" style="color:#ff9500;">💡</text>
+        <text class="tip-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="ios-bottom">
+    <view class="ios-btn-group">
+      <button class="ios-btn ios-btn-secondary" bindtap="resetLayout">重置</button>
+      <button class="ios-btn ios-btn-primary" bindtap="exportImage">
+        <image src="assets/page-icons/export.png" style="width:16px;height:16px;margin-right:4px;" mode="aspectFit" />
+        导出方案
+      </button>
+    </view>
+  </view>
+</view>

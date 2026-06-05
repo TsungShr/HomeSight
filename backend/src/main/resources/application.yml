@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: homesight-server
+  datasource:
+    url: jdbc:mysql://YOUR_DB_HOST:3306/homesight?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: YOUR_DB_USERNAME
+    password: YOUR_DB_PASSWORD
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+aliyun:
+  oss:
+    endpoint: oss-cn-hangzhou.aliyuncs.com
+    access-key-id: YOUR_ACCESS_KEY_ID
+    access-key-secret: YOUR_ACCESS_KEY_SECRET
+    bucket-name: homesight
+    url-prefix: https://homesight.oss-cn-hangzhou.aliyuncs.com/
+
+doubao:
+  api-key: YOUR_DOUBAO_API_KEY
+  model: doubao-seed-2-0-lite-260428
+
+# RAG 装修知识服务配置
+rag:
+  service-url: http://localhost:8000
+  top-k: 5
+  min-similarity: 0.0
+
+logging:
+  level:
+    com.homesight: DEBUG
+    org.hibernate.SQL: WARN
+    org.springframework.web: DEBUG
+    org.springframework.servlet: DEBUG

@@ -1,0 +1,128 @@
+<view class="container">
+  <!-- Large Title -->
+  <view style="padding: 16px 18px 4px;">
+    <text class="ios-title-lg">分析结果</text>
+  </view>
+
+  <!-- Loading -->
+  <view class="ios-loading-page" wx:if="{{loading}}">
+    <view class="ios-spinner" style="width:36px;height:36px;"></view>
+    <text class="ios-loading-text">AI 正在分析户型图...</text>
+    <text class="ios-loading-text" style="font-size:13px;">预计需要 10-30 秒</text>
+  </view>
+
+  <!-- Done -->
+  <block wx:if="{{!loading && analysisResult}}">
+    <!-- 概览 -->
+    <view class="ios-card" style="margin: 16px 16px 12px;">
+      <view class="ios-card-body">
+        <view class="overview-row">
+          <view class="overview-item">
+            <text class="overview-value">{{analysisResult.totalArea}}</text>
+            <text class="overview-label">总面积 (㎡)</text>
+          </view>
+          <view class="overview-divider"></view>
+          <view class="overview-item">
+            <text class="overview-value">{{analysisResult.rooms.length}}</text>
+            <text class="overview-label">房间数</text>
+          </view>
+          <view class="overview-divider"></view>
+          <view class="overview-item">
+            <text class="overview-value">{{analysisResult.pros.length}}</text>
+            <text class="overview-label">户型优势</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 户型图 -->
+    <view class="ios-card" style="margin: 0 16px 12px;">
+      <view class="ios-card-header">上传的户型图</view>
+      <image class="floorplan-img" src="{{previewImage}}" mode="widthFix" />
+    </view>
+
+    <!-- 房间列表 -->
+    <view class="ios-section-title" style="padding-left: 18px;">房间结构</view>
+    <view class="ios-list" style="margin: 0 16px 12px;">
+      <view
+        class="room-cell"
+        wx:for="{{analysisResult.rooms}}"
+        wx:key="name"
+        style="--room-color: {{item.color}};"
+      >
+        <view class="room-color-dot"></view>
+        <view class="room-info">
+          <view class="room-top">
+            <text class="room-name">{{item.name}}</text>
+            <view class="ios-tag" style="background: {{item.lightColor}}; color: {{item.color}}; font-size: 11px; padding: 2px 8px; border-radius: 12px;">{{item.area}}㎡</view>
+          </view>
+          <view class="room-features" wx:if="{{item.features.length > 0}}">
+            <text class="room-feature" wx:for="{{item.features}}" wx:for-item="f" wx:key="*this">{{f}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 优势 -->
+    <view class="ios-section-title" style="padding-left: 18px;">户型优势</view>
+    <view class="ios-card" style="margin: 0 16px 12px;">
+      <view class="ios-card-body" style="padding: 12px 16px;">
+        <view class="pro-item" wx:for="{{analysisResult.pros}}" wx:key="*this">
+          <image src="assets/page-icons/check.png" style="width:18px;height:18px;flex-shrink:0;margin-top:1px;" mode="aspectFit" />
+          <text class="pro-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 注意事项 -->
+    <view class="ios-section-title" style="padding-left: 18px;">注意事项</view>
+    <view class="ios-card" style="margin: 0 16px 12px;">
+      <view class="ios-card-body" style="padding: 12px 16px;">
+        <view class="caution-item" wx:for="{{analysisResult.cautions}}" wx:key="*this">
+          <view class="caution-icon">!</view>
+          <text class="caution-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 装修建议 (RAG) -->
+    <view class="ios-section-title" style="padding-left: 18px;">AI 装修建议</view>
+    <view class="ios-card" style="margin: 0 16px 12px;">
+      <view class="ios-card-body" style="padding: 12px 16px;">
+        <view wx:if="{{adviceLoading}}" style="text-align:center;padding:16px 0;">
+          <view class="ios-spinner" style="width:28px;height:28px;margin:0 auto 8px;"></view>
+          <text style="font-size:13px;color:#8e8e93;">正在结合装修知识库生成建议...</text>
+        </view>
+        <text wx:elif="{{adviceText}}" class="advice-text">{{adviceText}}</text>
+        <view wx:else style="text-align:center;padding:16px 0;">
+          <text style="font-size:13px;color:#8e8e93;display:block;margin-bottom:12px;">基于300个装修视频知识库\n结合你的户型图给出个性化建议</text>
+          <button class="ios-btn ios-btn-primary" style="width:auto;padding:10px 24px;font-size:14px;" bindtap="getDecorationAdvice">
+            生成装修建议
+          </button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作 -->
+    <view class="ios-bottom" style="padding-top: 8px;">
+      <view class="ios-btn-group">
+        <button class="ios-btn ios-btn-secondary" bindtap="goTo3D">
+          <image src="assets/page-icons/cube.png" style="width:16px;height:16px;margin-right:4px;" mode="aspectFit" />
+          3D 预览
+        </button>
+        <button class="ios-btn ios-btn-primary" bindtap="goToEdit">
+          <image src="assets/page-icons/sofa.png" style="width:16px;height:16px;margin-right:4px;" mode="aspectFit" />
+          进入编辑
+        </button>
+      </view>
+    </view>
+  </block>
+
+  <!-- 错误 -->
+  <view class="ios-empty" wx:if="{{!loading && !analysisResult && hasError}}">
+    <text class="ios-empty-icon" style="font-size:60px;">❌</text>
+    <text class="ios-empty-title">分析失败</text>
+    <text class="ios-empty-desc">{{errorMsg}}</text>
+    <button class="ios-btn ios-btn-secondary" style="width:auto;padding:12px 32px;" bindtap="retry">重新分析</button>
+  </view>
+</view>
