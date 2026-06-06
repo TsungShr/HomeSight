@@ -2,9 +2,9 @@ package com.homesight.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.homesight.config.AgentProperties;
 import com.homesight.config.DoubaoProperties;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
@@ -22,20 +22,22 @@ import java.util.*;
 @Service
 public class LayoutAgentService {
 
-    private static final String AGENT_BASE = "http://localhost:8081";
     private static final String DOUBAO_IMAGE_URL = "https://ark.cn-beijing.volces.com/api/v1/images/generations";
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final DoubaoProperties doubaoProps;
     private final OssService ossService;
+    private final AgentProperties agentProps;
 
     public LayoutAgentService(ObjectMapper objectMapper,
                               DoubaoProperties doubaoProps,
-                              OssService ossService) {
+                              OssService ossService,
+                              AgentProperties agentProps) {
         this.objectMapper = objectMapper;
         this.doubaoProps = doubaoProps;
         this.ossService = ossService;
+        this.agentProps = agentProps;
         this.restTemplate = new RestTemplate();
     }
 
@@ -96,7 +98,7 @@ public class LayoutAgentService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
-            String url = AGENT_BASE + "/chat";
+            String url = agentProps.getBaseUrl() + "/chat";
             Map<String, Object> resp = restTemplate.postForObject(url, entity, Map.class);
 
             if (resp != null && resp.get("answer") != null) {

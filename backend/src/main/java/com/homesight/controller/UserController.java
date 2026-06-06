@@ -2,7 +2,7 @@ package com.homesight.controller;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import lombok.Data;
+import com.homesight.config.WechatProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -17,16 +17,26 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class UserController {
 
+    private final WechatProperties wechatProps;
+    private final RestTemplate restTemplate;
+
+    public UserController(WechatProperties wechatProps) {
+        this.wechatProps = wechatProps;
+        this.restTemplate = new RestTemplate();
+    }
+
     @GetMapping("/user/openid")
     public Object getOpenId(@RequestParam String code) {
+        if (wechatProps.getAppId() == null || wechatProps.getAppId().startsWith("YOUR_")) {
+            return Map.of("code", -1, "msg", "微信配置未填写（请在 application.yml 中设置 wechat.app-id 和 wechat.app-secret）");
+        }
         try {
             String url = "https://api.weixin.qq.com/sns/jscode2session"
-                    + "?appid=wx176704e866d83d2d"
-                    + "&secret=b8b71fba050719ecf9eaf34cb7f23d44"
+                    + "?appid=" + wechatProps.getAppId()
+                    + "&secret=" + wechatProps.getAppSecret()
                     + "&js_code=" + code
                     + "&grant_type=authorization_code";
 
-            RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
             HttpEntity<Void> entity = new HttpEntity<>(headers);

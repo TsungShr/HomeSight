@@ -1,4 +1,21 @@
-"""装修知识智能体 - README
+# 装修知识智能体
+
+混合问答 Agent：知识库向量检索 + DuckDuckGo 实时搜索 + Ollama LLM。
+
+## 架构
+
+```
+用户问题
+    │
+    ├── 1. 本地知识库检索（Milvus/Ollama Embedding）
+    │       └── B站视频字幕摄入的装修知识
+    │
+    ├── 2. 实时联网搜索（DuckDuckGo）
+    │       └── 国家标准、品牌评测、行业文章
+    │
+    └── 3. Ollama LLM 综合回答
+            └── 融合知识库 + 搜索结果，给出专业建议
+```
 
 ## 快速启动
 
@@ -14,15 +31,11 @@ python main.py
 ```
 服务地址: http://localhost:8081
 
-### 3. 摄入视频知识
+### 3. 摄入视频知识（可选）
 ```bash
-# 单个视频
 curl -X POST http://localhost:8081/ingest \
   -H "Content-Type: application/json" \
-  -d '{"bilibili_url": "https://www.bilibili.com/video/BV1xxx"}'
-
-# 获取视频信息（不下载）
-curl "http://localhost:8081/video/info?bilibili_url=https://www.bilibili.com/video/BV1xxx"
+  -d '{"url": "https://www.bilibili.com/video/BV1xxx", "chunk_size": 500}'
 ```
 
 ### 4. 对话提问
@@ -37,57 +50,29 @@ curl -X POST http://localhost:8081/chat \
 | 接口 | 方法 | 说明 |
 |------|------|------|
 | GET /health | 健康检查 | 返回知识库chunk数量 |
-| GET /video/info | 获取视频信息 | 输入B站URL，返回标题、时长等 |
+| GET /video/info | 获取视频信息 | 输入URL，返回标题、时长等 |
 | POST /ingest | 摄入视频 | 后台下载字幕并存储向量 |
-| POST /chat | 对话问答 | 基于知识库+LLM生成回答 |
+| POST /chat | 对话问答 | **知识库+联网搜索+LLM综合回答** |
 | GET /knowledge/stats | 知识库统计 | chunk总数 |
 | POST /knowledge/clear | 清空知识库 | 删除所有已摄入内容 |
 
-## 集成到小程序
+## 回答来源
 
-在小程序后端（Java）添加一个Controller接口，调用本地Python服务：
+Agent 回答综合以下来源：
 
-```java
-@GetMapping("/advice")
-public Map<String, Object> getDecorationAdvice(
-        @RequestParam String query,
-        @RequestParam(required = false) String roomInfo) {
-    RestTemplate rt = new RestTemplate();
-    Map resp = rt.postForObject(
-        "http://localhost:8081/chat",
-        Map.of("query", query, "roomInfo", roomInfo),
-        Map.class
-    );
-    return resp;
-}
+1. **本地知识库** — 你摄入的B站装修视频字幕，有精确的领域知识
+2. **DuckDuckGo 搜索** — 实时联网获取国家标准、品牌评测、行业文章，补充时效性知识
+
+即使知识库为空，联网搜索也能给出权威回答。
+
+## 模型配置
+
+在 `.env` 中修改：
+
+```bash
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_EMBED_MODEL=mxbai-embed-large   # 向量模型
+OLLAMA_CHAT_MODEL=llama3.2             # 对话模型
 ```
 
-## 模型要求
-
-- Embedding模型: `mxbai-embed-large`（向量生成）
-- Chat模型: `llama3.2`（对话生成）
-
-如需换模型，修改 `.env` 文件中的 `OLLAMA_EMBED_MODEL` 和 `OLLAMA_CHAT_MODEL`。
-
-## 300个视频批量摄入
-
-创建一个视频URL列表文件，每行一个链接，然后：
-
-```python
-import httpx
-import asyncio
-
-urls = open('video_urls.txt').read().strip().split('\n')
-
-async def ingest_all():
-    async with httpx.AsyncClient(timeout=60) as client:
-        for url in urls:
-            try:
-                r = await client.post('http://localhost:8081/ingest', json={'bilibili_url': url})
-                print(r.json())
-                await asyncio.sleep(2)  # 避免请求过快
-            except Exception as e:
-                print(f'失败: {url} - {e}')
-
-asyncio.run(ingest_all())
-```
+支持任意 Ollama 模型，换模型后重启服务即可。

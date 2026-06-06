@@ -203,17 +203,17 @@ class ThreeHelper {
   _addFloorPolygon(pts, color, alpha) {
     const [r, g, b] = this._parseColor(color);
     const a = alpha || 0.3;
-    const verts = [];
+    const verts = [0, 0, 0]; // center (vertex 0)
     const idx = [];
-    const cx = pts.reduce((s, p) => s + p.x, 0) / pts.length;
-    const cy = pts.reduce((s, p) => s + p.y, 0) / pts.length;
     for (let i = 0; i < pts.length; i++) {
-      verts.push(cx, 0, cy, pts[i].x, 0, pts[i].y);
-      idx.push(0, i + 1, i + 2);
+      verts.push(pts[i].x, 0, pts[i].y);
+      idx.push(0, i + 1, ((i + 1) % pts.length) + 1);
     }
+    const colorArray = [];
+    for (let i = 0; i < pts.length + 1; i++) colorArray.push(r, g, b, a);
     this.objects.push({
       posAttr: new Float32Array(verts),
-      colors: new Float32Array(Array(verts.length / 3).fill([r, g, b, a]).flat()),
+      colors: new Float32Array(colorArray),
       idx: new Uint16Array(idx),
       is3D: false,
     });

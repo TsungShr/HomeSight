@@ -199,11 +199,14 @@ Page({
     }
     this.setData({ adviceLoading: true });
     try {
-      const res = await request.post(
-        `/decoration-advice/${this.data.floorPlanId}`,
-        {}
-      );
-      this.setData({ adviceText: res.advice || '', adviceLoading: false });
+      const rooms = this.data.analysisResult.rooms || [];
+      const roomInfo = rooms.map(r => `${r.name}(${r.area}㎡)`).join('、');
+      const res = await request.get('/advice', {
+        query: '请给出针对以下户型的装修建议：' + roomInfo,
+        roomInfo,
+      });
+      const answer = res?.answer || res || '';
+      this.setData({ adviceText: answer, adviceLoading: false });
     } catch (e) {
       this.setData({ adviceLoading: false });
       wx.showToast({ title: '生成建议失败，请稍后重试', icon: 'none', duration: 2500 });

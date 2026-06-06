@@ -40,6 +40,15 @@ rag:
   top-k: 5
   min-similarity: 0.0
 
+# 装修知识智能体 Agent（Python 服务）
+agent:
+  base-url: http://localhost:8081
+
+# 微信小程序登录
+wechat:
+  app-id: YOUR_WECHAT_APP_ID
+  app-secret: YOUR_WECHAT_APP_SECRET
+
 logging:
   level:
     com.homesight: DEBUG

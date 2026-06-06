@@ -521,6 +521,11 @@ Page({
     this.setData({ selectedId: '' });
   },
 
+  selectFurniture(e) {
+    const { id } = e.currentTarget.dataset;
+    if (id) this.setData({ selectedId: id });
+  },
+
   onFurnitureTouch(e) {
     const touches = e.touches;
     if (touches.length === 2) {

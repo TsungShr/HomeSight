@@ -268,98 +268,13 @@
 }
 .ios-btn-danger:active { background: rgba(255,59,48,0.06); }
 
-/* 底部弹层 */
-.model-sheet-mask {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0);
-  z-index: 999;
-  pointer-events: none;
-  transition: background 0.25s;
-}
-.model-sheet-mask.mask-show {
-  background: rgba(0,0,0,0.45);
-  pointer-events: auto;
-}
-.model-sheet {
-  position: fixed;
-  left: 0; right: 0;
-  bottom: 0;
-  z-index: 1000;
-  background: var(--ios-card);
-  border-radius: 16px 16px 0 0;
-  padding-bottom: env(safe-area-inset-bottom);
-  transform: translateY(100%);
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.model-sheet.sheet-show { transform: translateY(0); }
-.sheet-handle {
-  width: 36px;
-  height: 5px;
-  background: rgba(118,118,128,0.3);
-  border-radius: 3px;
-  margin: 10px auto 0;
-}
-.sheet-header {
-  text-align: center;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ios-text);
-  padding: 16px 0 10px;
-  border-bottom: 0.5px solid var(--ios-sep);
-  margin: 0 16px;
-}
-.sheet-list {
-  padding: 8px 0;
-  max-height: 360px;
-  overflow-y: auto;
-}
-.sheet-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  -webkit-tap-highlight-color: rgba(0,0,0,0.04);
-}
-.sheet-item:active { background: rgba(0,0,0,0.04); }
-.sheet-item-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.sheet-item-name { font-size: 15px; color: var(--ios-text); }
-.sheet-cancel {
-  text-align: center;
-  font-size: 17px;
-  font-weight: 600;
-  color: #007AFF;
-  padding: 16px 0;
-  border-top: 8px solid rgba(118,118,128,0.12);
-}
-.sheet-cancel:active { background: rgba(0,0,0,0.04); }
+/* ===== Bottom Sheet overrides (shared styles in app.wxss) ===== */
+.sheet-list { max-height: 360px; }
+.sheet-item { justify-content: flex-start; gap: 12px; }
+.sheet-item-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 
-/* 编辑房间表单 */
-.edit-room-form {
-  padding: 16px 20px 8px;
-}
-.form-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 0.5px solid rgba(0,0,0,0.06);
-}
-.form-label {
-  font-size: 15px;
-  color: var(--ios-text-3);
-  width: 70px;
-  flex-shrink: 0;
-}
-.form-input {
-  flex: 1;
-  font-size: 15px;
-  color: var(--ios-text);
-  background: transparent;
-  border: none;
-  outline: none;
-}
+/* ===== Edit room form ===== */
+.edit-room-form { padding: 16px 20px 8px; }
+.form-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 0.5px solid rgba(0,0,0,0.06); }
+.form-label { font-size: 15px; color: var(--ios-text-3); width: 70px; flex-shrink: 0; }
+.form-input { flex: 1; font-size: 15px; color: var(--ios-text); background: transparent; border: none; outline: none; }

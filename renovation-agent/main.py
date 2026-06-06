@@ -21,10 +21,10 @@ app = FastAPI(title='装修知识智能体', version='1.0.0')
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origin_regex=".*",
     allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*'],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # 全局agent实例（懒加载）

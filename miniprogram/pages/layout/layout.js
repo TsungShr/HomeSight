@@ -35,7 +35,8 @@ Page({
   },
 
   setReq(e) {
-    const { key, val } = e.currentTarget.dataset;
+    const { key } = e.currentTarget.dataset;
+    const val = e.currentTarget.dataset.val;
     this.setData({ [`req.${key}`]: val });
   },
 
@@ -199,36 +200,40 @@ Page({
 
       const layoutData = this.data.layoutData;
       if (!layoutData) {
-        this.drawFloorplanSkeleton(ctx, w, h);
+        this.drawFloorplanSkeleton(ctx, w, h, true);
         return;
       }
 
-      this.drawFloorplanSkeleton(ctx, w, h);
+      this.drawFloorplanSkeleton(ctx, w, h, false);
       this.drawWaterLines(ctx, layoutData.waterLines || []);
       this.drawElectricalRoutes(ctx, layoutData.electricalRoutes || []);
       this.drawPoints(ctx, layoutData);
     });
   },
 
-  drawFloorplanSkeleton(ctx, w, h) {
+  drawFloorplanSkeleton(ctx, w, h, showPlaceholder) {
     ctx.strokeStyle = '#ccc';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([4, 3]);
     ctx.strokeRect(20, 20, w - 40, h - 40);
     ctx.setLineDash([]);
-    ctx.fillStyle = '#999';
-    ctx.font = '22rpx sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('请先生成水电布局', w / 2, h / 2);
+    if (showPlaceholder) {
+      ctx.fillStyle = '#999';
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('请先生成水电布局', w / 2, h / 2);
+    }
   },
 
   drawWaterLines(ctx, lines) {
     if (!this.data.visible.water) return;
+    const v = this.data.visible;
     ctx.strokeStyle = '#00b4d8';
     ctx.lineWidth = 3;
     ctx.setLineDash([6, 3]);
-    lines.forEach(line => {
-      if (line.points.length < 2) return;
+    (lines || []).forEach(line => {
+      if ((line.points || []).length < 2) return;
       ctx.beginPath();
       line.points.forEach((p, i) => {
         const x = p.x * this.data.scale + this.data.offsetX;
@@ -245,8 +250,8 @@ Page({
     ctx.strokeStyle = '#ef476f';
     ctx.lineWidth = 2.5;
     ctx.setLineDash([5, 3]);
-    lines.forEach(line => {
-      if (line.points.length < 2) return;
+    (lines || []).forEach(line => {
+      if ((line.points || []).length < 2) return;
       ctx.beginPath();
       line.points.forEach((p, i) => {
         const x = p.x * this.data.scale + this.data.offsetX;

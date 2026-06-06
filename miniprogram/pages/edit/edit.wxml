@@ -178,11 +178,11 @@
     <view wx:if="{{editRoomData}}" class="edit-room-form">
       <view class="ios-form-item">
         <text class="ios-form-label">房间名称</text>
-        <input class="ios-input" value="{{editRoomData.name}}" bindinput="onRoomNameInput" placeholder="如：主卧" />
+        <input class="ios-input" value="{{editRoomData.name}}" bindinput="onEditRoomNameInput" placeholder="如：主卧" />
       </view>
       <view class="ios-form-item">
         <text class="ios-form-label">房间面积（㎡）</text>
-        <input class="ios-input" type="digit" value="{{editRoomData.area}}" bindinput="onRoomAreaInput" placeholder="如：20" />
+        <input class="ios-input" type="digit" value="{{editRoomData.area}}" bindinput="onEditRoomAreaInput" placeholder="如：20" />
       </view>
       <button class="ios-btn ios-btn-primary" style="margin-top:16px;" bindtap="saveRoomEdit">保存</button>
     </view>
